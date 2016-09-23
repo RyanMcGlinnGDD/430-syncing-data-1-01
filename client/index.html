@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+    <script type="text/babel" >
+      "use strict";
+      let socket;
+
+      //fired when app client starts, initializes socket logic
+      const init = () => {
+        //attach incrementValue method to button press
+        const incrementButton = document.querySelector("#incrementButton");
+        incrementButton.addEventListener('click', incrementValue);
+        
+        //establish socket connection
+        socket = io.connect();
+        
+        //assign event handlers
+        setupSocket();
+        
+        //join the room
+        socket.emit('join');
+        //set the initial value
+        socket.emit('initialValueRequest');
+      }
+
+      //when socket is connected, adds event handlers
+      const setupSocket = () => {
+        const myParameter = document.querySelector('#myParameter');
+
+        //handles updateParameter event from server
+        socket.on('serveIncrementedValue', (data) => {
+          console.log("receiving updated value...");
+          console.log(data);
+          const message = data.message;
+          myParameter.innerHTML = message;
+        });
+        
+        //handles serveInitialValueEvent from server
+        socket.on('serveInitialValue', (data) => {
+          console.log("receiving initial value...");
+          console.log(data);
+          const message = data.message;
+          myParameter.innerHTML = message;
+        });
+      }
+
+      //fires when the incrementButton is clicked
+      const incrementValue = () => {
+        console.log("requesting value increment...");
+        socket.emit('incrementValueRequest');
+      }
+
+      window.onload = init;
+    </script>
+</head>
+<body>
+  <p>Parameter Value:</p>
+  <p id='myParameter'></p>
+  <button id='incrementButton'>Press to increment value!</button>
+</body>
+</html>
